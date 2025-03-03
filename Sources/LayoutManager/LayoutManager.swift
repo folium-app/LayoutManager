@@ -9,47 +9,53 @@ public struct LayoutManager {
     
     public var library: UICollectionViewCompositionalLayout {
         let configuration = UICollectionViewCompositionalLayoutConfiguration()
-        configuration.interSectionSpacing = 10
+        configuration.interSectionSpacing = 20
         
-        return .init(sectionProvider: { (sectionIndex: Int, layoutEnvironment: NSCollectionLayoutEnvironment) in
-            let isiPad = UIDevice.current.userInterfaceIdiom == .pad
-            let columns: CGFloat = layoutEnvironment.container.effectiveContentSize.width < UIScreen.main.bounds.height ? isiPad ? 4 : 2 : isiPad ? 6 : 4
-            let bottomColumns: CGFloat = layoutEnvironment.container.effectiveContentSize.width < UIScreen.main.bounds.height ? isiPad ? 5 : 3 : isiPad ? 7 : 4
-            
-            let isLandscape: Bool = layoutEnvironment.container.effectiveContentSize.width > UIScreen.main.bounds.height
-            
-            let topItem = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1 / columns), heightDimension: .estimated(300)))
-            let bottomItem = NSCollectionLayoutItem(layoutSize: .init(widthDimension: .fractionalWidth(1 / (isLandscape ? bottomColumns : columns)), heightDimension: .estimated(300)))
-            
-            let topGroup: NSCollectionLayoutGroup = if #available(iOS 16, *) {
-                .horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300)),
-                            repeatingSubitem: topItem, count: Int(columns))
-            } else {
-                .horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300)),
-                            subitem: topItem, count: Int(columns))
+        return .init(sectionProvider: { sectionIndex, layoutEnvironment in
+            switch UIDevice.current.userInterfaceIdiom {
+            case .pad: iPadLibrary(layoutEnvironment)
+            case .phone: iPhoneLibrary(layoutEnvironment)
+            default:
+                nil
             }
-            topGroup.interItemSpacing = .fixed(10)
-            
-            let bottomGroup: NSCollectionLayoutGroup = if #available(iOS 16, *) {
-                .horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300)),
-                            repeatingSubitem: bottomItem, count: Int(isLandscape ? bottomColumns : columns))
-            } else {
-                .horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300)),
-                            subitem: bottomItem, count: Int(isLandscape ? bottomColumns : columns))
-            }
-            bottomGroup.interItemSpacing = .fixed(10)
-            
-            let nestedGroup = NSCollectionLayoutGroup.vertical(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(600)), subitems: [topGroup, bottomGroup])
-            nestedGroup.interItemSpacing = .fixed(10)
-            
-            let section = NSCollectionLayoutSection(group: nestedGroup)
-            section.boundarySupplementaryItems = [
-                .init(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44)),
-                      elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
-            ]
-            section.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
-            section.interGroupSpacing = 10
-            return section
         }, configuration: configuration)
+    }
+    
+    private func iPadLibrary(_ layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? {
+        let itemCount: Int = layoutEnvironment.container.effectiveContentSize.width < UIScreen.main.bounds.height ? 5 : 6
+        
+        let item: NSCollectionLayoutItem = .init(layoutSize: .init(widthDimension: .fractionalWidth(1 / .init(itemCount)), heightDimension: .estimated(300)))
+        
+        let group: NSCollectionLayoutGroup = .horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300)), subitem: item, count: itemCount)
+        group.interItemSpacing = .fixed(10)
+        
+        let header: NSCollectionLayoutBoundarySupplementaryItem = .init(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44)),
+                                                                        elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+        
+        let section: NSCollectionLayoutSection = .init(group: group)
+        section.boundarySupplementaryItems = [header]
+        section.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
+        section.interGroupSpacing = 10
+        
+        return section
+    }
+    
+    private func iPhoneLibrary(_ layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? {
+        let itemCount: Int = layoutEnvironment.container.effectiveContentSize.width < UIScreen.main.bounds.height ? 2 : 4
+        
+        let item: NSCollectionLayoutItem = .init(layoutSize: .init(widthDimension: .fractionalWidth(1 / .init(itemCount)), heightDimension: .estimated(300)))
+        
+        let group: NSCollectionLayoutGroup = .horizontal(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(300)), subitem: item, count: itemCount)
+        group.interItemSpacing = .fixed(10)
+        
+        let header: NSCollectionLayoutBoundarySupplementaryItem = .init(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44)),
+                                                                        elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
+        
+        let section: NSCollectionLayoutSection = .init(group: group)
+        section.boundarySupplementaryItems = [header]
+        section.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
+        section.interGroupSpacing = 10
+        
+        return section
     }
 }
