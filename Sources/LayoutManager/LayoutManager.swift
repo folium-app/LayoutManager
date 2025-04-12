@@ -39,9 +39,13 @@ public struct LayoutManager {
                                                                                 elementKind: UICollectionView.elementKindSectionHeader, alignment: .top)
                 header.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
                 
+                let footer: NSCollectionLayoutBoundarySupplementaryItem = .init(layoutSize: .init(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44)),
+                                                                                elementKind: UICollectionView.elementKindSectionFooter, alignment: .bottom)
+                footer.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
+                
                 let section: NSCollectionLayoutSection = .init(group: group)
-                section.boundarySupplementaryItems = [header]
-                // section.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
+                section.boundarySupplementaryItems = [header, footer]
+                section.contentInsets = .init(top: 0, leading: 0, bottom: [.cheats, .saveStates].contains(sectionType) ? 8 : 0, trailing: 0)
                 section.interGroupSpacing = 20
                 section.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
                 return section
