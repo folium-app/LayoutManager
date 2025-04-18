@@ -4,6 +4,7 @@
 import Foundation
 import UIKit
 
+@MainActor
 public struct LayoutManager {
     public static let shared = LayoutManager()
     
